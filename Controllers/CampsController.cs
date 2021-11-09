@@ -3,6 +3,7 @@ using CoreCodeCamp.Data;
 using CoreCodeCamp.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,10 +17,12 @@ namespace CoreCodeCamp.Controllers
     {
         private readonly ICampRepository _repository;
         private readonly IMapper _mapper;
-        public CampsController(ICampRepository repository, IMapper mapper)
+        private readonly LinkGenerator _linkGenerator;
+        public CampsController(ICampRepository repository, IMapper mapper, LinkGenerator linkGenerator)
         {
             _repository = repository;
             _mapper = mapper;
+            _linkGenerator = linkGenerator;
         }
         [HttpGet]
         public async Task<ActionResult<CampModel[]>> GetCamps(bool includeTalks = false)
@@ -65,6 +68,37 @@ namespace CoreCodeCamp.Controllers
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
             }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<CampModel>> Post (CampModel model)
+        {
+            try
+            {
+                var location = _linkGenerator.GetPathByAction("Get", "Camps", new { moniker = model.Moniker });
+
+                if (string.IsNullOrWhiteSpace(location))
+                {
+                    return BadRequest("Could not use current moniker");
+                }
+
+                //Create a new Camp
+                var camp = _mapper.Map<Camp>(model);
+                _repository.Add(camp);
+                if (await _repository.SaveChangesAsync())
+                {
+                    return Created(location, _mapper.Map<CampModel>(camp));
+                    /* return Created($"/api/camps/{camp.Moniker}",_mapper.Map<CampModel>(camp))
+                     Rather than using a Fixed Path we have used Link Generator Class that is applicable to Dot Net Core only.
+                    */
+                }
+
+            }
+            catch (Exception e)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
+            }
+            return BadRequest();
         }
     }
 }
