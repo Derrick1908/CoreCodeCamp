@@ -7,6 +7,7 @@ using CoreCodeCamp.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,6 +29,12 @@ namespace CoreCodeCamp
           opt.AssumeDefaultVersionWhenUnspecified = true;
           opt.DefaultApiVersion = new ApiVersion(1, 1);
           opt.ReportApiVersions = true;
+          //opt.ApiVersionReader = new QueryStringApiVersionReader("ver");  //Used to Change the Query String from ?api-version to ?ver
+          //opt.ApiVersionReader = new HeaderApiVersionReader("X-Version");   //Using a Header "X-Version" we can specify which Version we want rather than specifying Query String
+          opt.ApiVersionReader = ApiVersionReader.Combine(              //Either Header or Query String can be used
+              new HeaderApiVersionReader("X-Version"),  
+              new QueryStringApiVersionReader("ver","version")          //Either Ver or Version can be used
+              );
       });
       services.AddControllers();
       
