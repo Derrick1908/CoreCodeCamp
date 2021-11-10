@@ -16,7 +16,8 @@ namespace CoreCodeCamp.Data
                 .ReverseMap();
             this.CreateMap<Talk, TalkModel>()
                 .ReverseMap()
-                .ForMember(t => t.Camp, opt => opt.Ignore())
+                .ForMember(t => t.TalkId, opt => opt.Ignore())      // Since During PUT Operation, we already have the ID, this particular mapping can be ignored during Reverse Map.
+                .ForMember(t => t.Camp, opt => opt.Ignore())        //Ignore these Mappings for the Reverse Map i.e from TalkModel to Talk hence placed after Reverse Map.
                 .ForMember(t => t.Speaker, opt => opt.Ignore());
             this.CreateMap<Speaker, SpeakerModel>();                                
         }

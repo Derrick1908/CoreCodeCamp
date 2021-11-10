@@ -88,7 +88,64 @@ namespace CoreCodeCamp.Controllers
             }
             catch (Exception)
             {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to get Talks");
+            }
+        }
 
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<TalkModel>> Put(string moniker, int id, TalkModel model)
+        {
+            try
+            {
+                var talk = await _repository.GetTalkByMonikerAsync(moniker, id, true);
+                if (talk == null) return BadRequest("Could not find the Talk");
+
+                _mapper.Map(model, talk);
+
+                if (model.Speaker != null)
+                {
+                    var speaker = await _repository.GetSpeakerAsync(model.Speaker.SpeakerId);
+                    if (speaker != null)
+                    {
+                        talk.Speaker = speaker;
+                    }
+                }
+
+                if (await _repository.SaveChangesAsync())
+                {
+                    return _mapper.Map<TalkModel>(talk);
+                }
+                else
+                {
+                    return BadRequest("Failed to update the database");
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to get Talks");
+            }
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(string moniker, int id)
+        {
+            try
+            {
+                var talk = await _repository.GetTalkByMonikerAsync(moniker, id);
+                if (talk == null) return NotFound("Failed to find the Talk to Delete.");
+                _repository.Delete(talk);
+
+                if(await _repository.SaveChangesAsync())
+                {
+                    return Ok("Talk successfully Deleted.");
+                }
+                else
+                {
+                    return BadRequest("Failed to delete Talk");
+                }
+            }
+            catch (Exception)
+            {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Failed to get Talks");
             }
         }
