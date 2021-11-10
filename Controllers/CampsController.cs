@@ -94,10 +94,8 @@ namespace CoreCodeCamp.Controllers
                 _repository.Add(camp);
                 if (await _repository.SaveChangesAsync())
                 {
-                    return Created(location, _mapper.Map<CampModel>(camp));
-                    /* return Created($"/api/camps/{camp.Moniker}",_mapper.Map<CampModel>(camp))
-                     Rather than using a Fixed Path we have used Link Generator Class that is applicable to Dot Net Core only.
-                    */
+                    return Created(location, _mapper.Map<CampModel>(camp));  /* return Created($"/api/camps/{camp.Moniker}",_mapper.Map<CampModel>(camp))
+                                                                                Rather than using a Fixed Path we have used Link Generator Class that is applicable to Dot Net Core only.                    */
                 }
 
             }
